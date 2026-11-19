@@ -1,6 +1,11 @@
 import unittest
 from unittest.mock import patch
-from service import rechercher_livres, emprunter_livre
+
+from service import (
+    rechercher_livres,
+    emprunter_livre,
+    rendre_livre,
+)
 
 
 class TestService(unittest.TestCase):
@@ -32,6 +37,20 @@ class TestService(unittest.TestCase):
 
         self.assertFalse(succes)
         self.assertEqual(message, "Livre introuvable.")
+        connexion.close.assert_called_once()
+
+    @patch("service.obtenir_connexion")
+    def test_rendre_livre_introuvable(self, mock_connexion):
+        connexion = mock_connexion.return_value
+        connexion.execute.return_value.fetchone.return_value = None
+
+        succes, message = rendre_livre(999999)
+
+        self.assertFalse(succes)
+        self.assertEqual(
+            message,
+            "Emprunt introuvable ou déjà rendu."
+        )
         connexion.close.assert_called_once()
 
 
